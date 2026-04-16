@@ -49,10 +49,34 @@ ToneAI is the canonical reference implementation of an IronBound app. It demonst
 ### How It Works
 
 1. The user tells ToneAI what song, album, or artist they want to dial in
-2. ToneAI researches the gear and generates a NUX MightyAmp QR preset
-3. The agent writes preset data directly to `./output/` (scratch area)
-4. The agent calls `npx tsx src/qr-generator.ts` to encode and save the QR image
-5. QR image is saved to the user's output folder, scratch files are cleaned up
+2. ToneAI uses its built-in web search to research per-recording gear (amp, guitar, effects)
+3. ToneAI writes a preset JSON file to `./output/preset.json`
+4. ToneAI calls `npx tsx src/qr-generator.ts ./output/preset.json` to encode and save the QR image
+5. QR image is saved to `./output/<artist>-<song>.png` and copied to the user's output folder
+
+### Preset JSON Format
+
+The agent must write a JSON file matching this schema before calling `qr-generator.ts`:
+
+```json
+{
+  "artist": "Pink Floyd",
+  "song": "Comfortably Numb",
+  "device": "plugpro",
+  "preset_name": "Comfortably Numb",
+  "preset_name_short": "Comf Numb",
+  "amp": { "id": 5, "gain": 65, "master": 70, "bass": 55, "mid": 45, "treble": 60 },
+  "cabinet": { "id": 3, "level_db": 0, "low_cut_hz": 80, "high_cut": 50 },
+  "noise_gate": { "enabled": true, "sensitivity": 40, "decay": 50 },
+  "efx": { "id": 3, "enabled": true, "p1": 60, "p2": 40 },
+  "delay": { "id": 2, "enabled": true, "p1": 55, "p2": 40, "p3": 60 },
+  "reverb": { "id": 4, "enabled": true, "p1": 35, "p2": 50 },
+  "master_db": 0
+}
+```
+
+All effect fields (`efx`, `compressor`, `modulation`, `delay`, `reverb`, `eq`) are optional.
+The generator handles coercion of missing or malformed fields automatically.
 
 ### Project Structure
 
