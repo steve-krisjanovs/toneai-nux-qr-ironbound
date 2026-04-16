@@ -176,3 +176,41 @@ VERSION=$(cat version.txt)
 git tag "v${VERSION}"
 git push origin "v${VERSION}"
 ```
+
+After tagging, write release notes manually with:
+```bash
+GITHUB_TOKEN="" gh release edit vX.X.X --repo steve-krisjanovs/toneai-nux-qr-ironbound --notes "..."
+```
+
+---
+
+## Release History
+
+| Version | What shipped |
+|---|---|
+| v1.0.0 | Initial release — all 11 devices, gear research, album mode, bass support, desktop shortcut |
+| v1.0.1 | Fix: version string showing as `see-version.txt` in QR card header |
+| v1.0.2 | README rewrite — product page instead of feature summary |
+| v1.1.0 | Rig awareness + instrument switching — pickup-calibrated gain/noise gate/EQ, mid-session switching |
+| v1.1.1 | Desktop: deps install at runtime on first launch, not bundled in ZIP |
+| v1.1.2 | Dual ZIPs — `*-desktop-*` (lean, runtime install) and `*-v*` (full, mobile-compatible) |
+
+---
+
+## Needs Testing
+
+- [ ] **v1.1.0 — Rig awareness**: instrument profile saved on first session, mid-session switch ("Switching to the Jazz Bass"), pickup type mentioned in preset explanation
+- [ ] **v1.1.1 — Runtime install**: desktop ZIP installs deps silently on first launch, skips on subsequent launches
+- [ ] **v1.1.2 — Desktop ZIP**: confirm runtime install works end-to-end from a clean extract
+- [ ] **v1.1.2 — Mobile ZIP**: upload to Claude.ai, confirm it extracts and ToneAI runs correctly
+
+---
+
+## Roadmap
+
+| Version | Feature |
+|---|---|
+| v1.2.0 | **Preset history** — local index of generated presets (artist, song, device, file path, date); re-send without regenerating |
+| v1.3.0 | **Setlist mode** — give ToneAI a setlist, get all presets at once, numbered to match order |
+| v1.4.0 | **A/B variants** — two takes per song (faithful to recording vs. optimised for bedroom volume) |
+| v1.5.0 | **Effect chain explanation** — text signal chain after each preset: Guitar → Gate → Amp → FX → Cab |
