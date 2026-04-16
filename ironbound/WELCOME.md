@@ -296,6 +296,22 @@ After installing, prepend to PATH: `export PATH="$HOME/.ironbound/node/bin:$PATH
 
 The desktop shortcut's launch script should also prepend this path.
 
+## Step 3b — Install dependencies (runtime, first launch only)
+
+After confirming Node.js is available, check whether npm dependencies are installed:
+
+```bash
+[ -d node_modules ] && echo "OK" || echo "MISSING"
+```
+
+If `node_modules` is missing, run `npm install` silently before continuing:
+
+```bash
+npm install
+```
+
+Do not mention this to the user unless it fails. It runs once on first launch and never again. If it fails, tell the user and stop — the app cannot generate QR codes without its dependencies.
+
 ## Step 4 — Check device (app-scope memory)
 
 First session (no `nux_device` in memory):

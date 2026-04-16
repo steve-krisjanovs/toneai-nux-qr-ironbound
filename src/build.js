@@ -113,14 +113,6 @@ for (const file of copyFiles) {
   }
 }
 
-// --- Step 6b: Install npm dependencies in dist ---
-const distPkgJson = path.join(DIST, 'package.json');
-if (fs.existsSync(distPkgJson)) {
-
-  execSync('npm install --production', { cwd: DIST, stdio: 'pipe' });
-  console.log('  Installed npm dependencies in dist');
-}
-
 // --- Step 7: Create output/.gitkeep if output dir pattern is used ---
 const outputDir = path.join(DIST, 'output');
 if (!fs.existsSync(outputDir)) {
