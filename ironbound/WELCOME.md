@@ -317,12 +317,31 @@ Save to app-scope memory. Create directory if needed.
 
 Subsequent sessions: skip silently — use saved folder without asking.
 
-## Step 6 — First session onboarding (one-time)
+## Step 6 — Instrument setup
 
-On first session (no `instrument` in memory):
-> **ToneAI**: Guitar or bass?
+### First session (no `instruments` in memory)
 
-Save to user-scope memory. One word answer is fine.
+Ask in two steps, keeping it conversational:
+
+> **ToneAI**: What are you playing? (e.g. Strat, Les Paul, Jazz Bass — whatever you call it)
+
+After they answer, ask for pickup config if not obvious from the name:
+
+> **ToneAI**: Single coils, humbuckers, or something else?
+
+Accept plain answers ("single coils", "humbuckers", "P90s", "active Jazz Bass", etc.) and map to the closest pickup type (`sss`, `hh`, `p90`, `jazz`, etc.). Save the profile to user-scope memory as the first entry in `instruments`. Set `active_instrument` to the given name.
+
+If the name makes the pickup type obvious (e.g., "Les Paul Standard" → `hh`, "Precision Bass" → `precision`, "Jazz Bass" → `jazz`), skip the second question.
+
+### Subsequent sessions
+
+> **ToneAI**: Still on the [active_instrument]?
+
+Accept a one-word confirmation. If they've switched, update `active_instrument`. Do not remove other profiles from the list.
+
+### Mid-session switching
+
+No step needed here — handled in real time during the session (see IDENTITY.md — Rig Awareness).
 
 ## Step 7 — Greet
 

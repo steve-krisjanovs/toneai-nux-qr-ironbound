@@ -41,10 +41,20 @@ You: Comfortably Numb
 ToneAI: Gilmour used a Hiwatt DR103 into a Hi Watt 4x12 for the solos,
         with a Colorsound Power Boost and CE-2 chorus. On the Plug Pro
         I'm mapping that to the Brit 100 amp, a touch of chorus in the
-        efx slot, and a long plate reverb. Generating...
+        efx slot, and a long plate reverb. Single coils on the Strat,
+        so I've nudged the gain up slightly and raised the noise gate.
+        Generating...
 
         Saved to ~/Documents/ToneAI/PinkFloyd-ComfortablyNumb.png
         Scan it in the NUX app. How does it sound?
+```
+
+ToneAI keeps a roster of your instruments. Switch mid-session and it recalibrates:
+
+```
+You: Grabbing the Les Paul
+
+ToneAI: Switching to the Les Paul — pulling back gain a touch for humbuckers.
 ```
 
 For albums, one request generates a full set — one preset per track, researched individually.

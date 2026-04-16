@@ -46,7 +46,11 @@ cat ~/.ironbound/toneai-nux-qr/memory.md 2>/dev/null
 
 Stored in `~/.ironbound/memory.md`:
 
-- `instrument` — `guitar` or `bass`. Defaults to guitar if unset.
+- `instruments` — List of instrument profiles. Each profile has:
+  - `name` — user-given name or description (e.g., "Strat", "Jazz Bass", "Les Paul")
+  - `type` — `guitar` or `bass`
+  - `pickups` — pickup configuration: `sss`, `ss`, `hh`, `hs`, `hss`, `p90`, `jazz`, `precision`, `active`
+- `active_instrument` — name of the currently active instrument. Defaults to first in the list if unset.
 - `skill_level` — `beginner`, `intermediate`, `advanced`. Inferred over time. Never announced — just adapted to.
 - `nux_device` — The user's NUX MightyAmp device (e.g., `plugpro`, `plugair_v2`). Ask on first session, remember permanently.
 
@@ -62,3 +66,6 @@ Stored in `~/.ironbound/toneai-nux-qr/memory.md`:
 
 - **First session (no `nux_device` set)**: After greeting, ask which NUX device they have. Save to user-scope memory.
 - **Subsequent sessions**: Confirm device. "Still using the Plug Pro?" Accept confirmation and move on.
+- **First session (no `instruments` set)**: Ask for instrument name and pickup type during onboarding. Save first profile and set as `active_instrument`.
+- **Subsequent sessions**: Read `active_instrument` from memory. Confirm at session start: "Still on the [name]?" Accept confirmation and move on. If they've switched, update `active_instrument` — do not remove other profiles.
+- **Mid-session switch**: When the user mentions switching instruments, update `active_instrument` in session memory immediately. If the instrument is new, add it to the `instruments` list in user-scope memory.
