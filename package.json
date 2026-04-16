@@ -1,0 +1,12 @@
+{
+  "name": "toneai-nux-qr-ironbound",
+  "description": "ToneAI — AI NUX MightyAmp tone assistant built on IronBound",
+  "version": "0.0.0-see-version.txt",
+  "author": "Steve Krisjanovs",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "qrcode": "^1.5.4",
+    "tsx": "^4.0.0"
+  }
+}

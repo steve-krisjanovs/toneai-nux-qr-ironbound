@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <rect width="128" height="128" rx="24" fill="#2d1b00"/>
+  <!-- Chef hat -->
+  <ellipse cx="64" cy="42" rx="30" ry="24" fill="#FFFFFF"/>
+  <circle cx="42" cy="44" r="14" fill="#FFFFFF"/>
+  <circle cx="86" cy="44" r="14" fill="#FFFFFF"/>
+  <circle cx="64" cy="30" r="16" fill="#FFFFFF"/>
+  <rect x="40" y="56" width="48" height="14" rx="2" fill="#F0F0F0"/>
+  <rect x="40" y="56" width="48" height="3" fill="#E0D5CA"/>
+  <!-- Spatula -->
+  <rect x="78" y="74" width="6" height="30" rx="2" fill="#D4886B" transform="rotate(-20 81 89)"/>
+  <rect x="76" y="70" width="10" height="10" rx="3" fill="#8B4513" transform="rotate(-20 81 75)"/>
+  <!-- Steam lines -->
+  <path d="M50 82c0-4 4-4 4-8" stroke="#F4A460" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
+  <path d="M60 80c0-4 4-4 4-8" stroke="#F4A460" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
+</svg>
