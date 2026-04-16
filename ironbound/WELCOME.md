@@ -1,6 +1,6 @@
 # Welcome Flow
 
-**Network calls in the welcome flow (weather check, update check) must never block session start. Apply a 5-second timeout to all network requests and skip silently if unreachable.**
+**Network calls in the welcome flow (update check) must never block session start. Apply a 5-second timeout to all network requests and skip silently if unreachable.**
 
 On the first interaction of a new session, perform the following steps in order:
 
@@ -8,7 +8,7 @@ On the first interaction of a new session, perform the following steps in order:
 
 ### Check for installer flag
 
-If `~/.ironbound/chef-remy/.installed` exists, the app was installed via a platform installer. Skip:
+If `~/.ironbound/toneai-nux-qr/.installed` exists, the app was installed via a platform installer. Skip:
 - Node.js check (installer handled it)
 - Desktop shortcut creation (installer handled it)
 - Go straight to greeting
@@ -19,14 +19,14 @@ Write the agent's PID to a file so installers can gracefully terminate during up
 
 macOS / Linux:
 ```bash
-mkdir -p ~/.ironbound/chef-remy
-echo $PPID > ~/.ironbound/chef-remy/.pid
+mkdir -p ~/.ironbound/toneai-nux-qr
+echo $PPID > ~/.ironbound/toneai-nux-qr/.pid
 ```
 
 Windows:
 ```powershell
 $agentPid = (Get-Process -Id $PID).Parent.Id
-$agentPid | Out-File "$env:USERPROFILE\.ironbound\chef-remy\.pid"
+$agentPid | Out-File "$env:USERPROFILE\.ironbound\toneai-nux-qr\.pid"
 ```
 
 This runs silently on every session start.
@@ -35,11 +35,11 @@ This runs silently on every session start.
 
 Read `ironbound/SESSION.md`. If `mode: singleton`:
 
-1. Check lock file at `~/.ironbound/chef-remy/.lock`
+1. Check lock file at `~/.ironbound/toneai-nux-qr/.lock`
 2. If lock exists:
    a. Read PID from lock
    b. Check if PID is still running (`kill -0` on unix, `Get-Process` on Windows)
-   c. Still running → refuse to start: "Chef Remy is already running. Please use the existing session."
+   c. Still running → refuse to start: "ToneAI is already running. Please use the existing session."
    d. Not running (stale lock) → delete lock, proceed
 3. If no lock → write `$PPID` to lock file, proceed
 4. At session end → delete lock file
@@ -51,11 +51,11 @@ If `mode: multi` → skip this check entirely.
 Read `ironbound/SESSION.md` and check if `update.enabled` is true. If so:
 
 1. Skip if `.installed` flag exists (installer owns update lifecycle)
-2. Skip if Homebrew manages the install (check for `/opt/homebrew/Cellar/chef-remy` or `/usr/local/Cellar/chef-remy`)
+2. Skip if Homebrew manages the install (check for `/opt/homebrew/Cellar/toneai-nux-qr` or `/usr/local/Cellar/toneai-nux-qr`)
 3. Fetch latest version: `curl -s https://api.github.com/repos/{owner}/{repo}/releases/latest` (timeout 5 seconds)
 4. Compare `tag_name` against local `version.txt`
 5. If newer version exists, ask the user:
-   "Chef Remy: A new version is available (vX.Y.Z). Want me to download and apply the update? I'll restart automatically when done."
+   "ToneAI: A new version is available (vX.Y.Z). Want me to download and apply the update? I'll restart automatically when done."
 6. If user confirms: download ZIP from release assets, extract over current directory, restart agent
 7. If offline or API fails: skip silently, never block session start
 
@@ -91,8 +91,8 @@ Never rely on PATH to resolve the agent CLI. Store the full binary path at first
 macOS / Linux:
 ```bash
 AGENT_BIN=$(which <agent>)
-mkdir -p ~/.ironbound/chef-remy
-echo '{"agent": "<agent>", "bin": "'$AGENT_BIN'"}' > ~/.ironbound/chef-remy/config.json
+mkdir -p ~/.ironbound/toneai-nux-qr
+echo '{"agent": "<agent>", "bin": "'$AGENT_BIN'"}' > ~/.ironbound/toneai-nux-qr/config.json
 ```
 
 The desktop shortcut launch command and all subsequent invocations should use the stored path from `config.json` rather than the agent name directly.
@@ -145,20 +145,20 @@ Before creating or rebuilding, check if an existing shortcut already matches the
 
 **macOS** — read metadata from the .app bundle's Info.plist:
 ```bash
-EXISTING_VERSION=$(defaults read ~/Desktop/Chef\ Remy.app/Contents/Info.plist IronBoundVersion 2>/dev/null)
-EXISTING_PATH=$(defaults read ~/Desktop/Chef\ Remy.app/Contents/Info.plist IronBoundPath 2>/dev/null)
+EXISTING_VERSION=$(defaults read ~/Desktop/ToneAI.app/Contents/Info.plist IronBoundVersion 2>/dev/null)
+EXISTING_PATH=$(defaults read ~/Desktop/ToneAI.app/Contents/Info.plist IronBoundPath 2>/dev/null)
 ```
 
 **Linux** — grep metadata from the .desktop file:
 ```bash
-EXISTING_VERSION=$(grep '^X-IronBound-Version=' ~/Desktop/Chef\ Remy.desktop 2>/dev/null | cut -d= -f2)
-EXISTING_PATH=$(grep '^X-IronBound-Path=' ~/Desktop/Chef\ Remy.desktop 2>/dev/null | cut -d= -f2)
+EXISTING_VERSION=$(grep '^X-IronBound-Version=' ~/Desktop/ToneAI.desktop 2>/dev/null | cut -d= -f2)
+EXISTING_PATH=$(grep '^X-IronBound-Path=' ~/Desktop/ToneAI.desktop 2>/dev/null | cut -d= -f2)
 ```
 
 **Windows** — read the Description field from the .lnk file (pipe-delimited `IronBound|version|path`):
 ```powershell
 $WshShell = New-Object -ComObject WScript.Shell
-$Existing = $WshShell.CreateShortcut("$env:USERPROFILE\Desktop\Chef Remy.lnk")
+$Existing = $WshShell.CreateShortcut("$env:USERPROFILE\Desktop\ToneAI.lnk")
 $Meta = $Existing.Description -split '\|'
 $ExistingVersion = $Meta[1]
 $ExistingPath = $Meta[2]
@@ -172,22 +172,22 @@ $ExistingPath = $Meta[2]
 
 ### Create the shortcut
 
-**macOS** — create a native `.app` bundle at `~/Desktop/Chef Remy.app`:
+**macOS** — create a native `.app` bundle at `~/Desktop/ToneAI.app`:
 
 1. Create the directory structure:
 ```bash
-mkdir -p ~/Desktop/Chef\ Remy.app/Contents/MacOS
-mkdir -p ~/Desktop/Chef\ Remy.app/Contents/Resources
+mkdir -p ~/Desktop/ToneAI.app/Contents/MacOS
+mkdir -p ~/Desktop/ToneAI.app/Contents/Resources
 ```
 
-2. Create the launch script at `~/Desktop/Chef Remy.app/Contents/MacOS/launch`:
+2. Create the launch script at `~/Desktop/ToneAI.app/Contents/MacOS/launch`:
 ```bash
 #!/bin/bash
 osascript -e 'tell app "Terminal" to do script "cd \"<absolute-cwd-path>\" && <agent> \"hello\""'
 ```
 Then `chmod +x` the launch script.
 
-3. Create `~/Desktop/Chef Remy.app/Contents/Info.plist` with version and path metadata:
+3. Create `~/Desktop/ToneAI.app/Contents/Info.plist` with version and path metadata:
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -198,11 +198,11 @@ Then `chmod +x` the launch script.
     <key>CFBundleIconFile</key>
     <string>icon</string>
     <key>CFBundleName</key>
-    <string>Chef Remy</string>
+    <string>ToneAI</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleIdentifier</key>
-    <string>com.cordfuse.chefremy</string>
+    <string>com.stevekrisjanovs.toneai</string>
     <key>LSUIElement</key>
     <false/>
     <key>IronBoundVersion</key>
@@ -224,19 +224,19 @@ sips -z 32 32 /tmp/app-icon.png --out /tmp/app.iconset/icon_16x16@2x.png 2>/dev/
 sips -z 64 64 /tmp/app-icon.png --out /tmp/app.iconset/icon_32x32@2x.png 2>/dev/null
 sips -z 256 256 /tmp/app-icon.png --out /tmp/app.iconset/icon_128x128@2x.png 2>/dev/null
 sips -z 512 512 /tmp/app-icon.png --out /tmp/app.iconset/icon_256x256@2x.png 2>/dev/null
-iconutil -c icns /tmp/app.iconset -o ~/Desktop/Chef\ Remy.app/Contents/Resources/icon.icns 2>/dev/null
+iconutil -c icns /tmp/app.iconset -o ~/Desktop/ToneAI.app/Contents/Resources/icon.icns 2>/dev/null
 rm -rf /tmp/app.iconset /tmp/app-icon.png
 ```
 
-5. Refresh icon: `touch ~/Desktop/Chef\ Remy.app`
+5. Refresh icon: `touch ~/Desktop/ToneAI.app`
 
 If icon conversion fails, the app still works — just without a custom icon.
 
-**Linux** — create `~/Desktop/Chef Remy.desktop` with version and path metadata:
+**Linux** — create `~/Desktop/ToneAI.desktop` with version and path metadata:
 ```ini
 [Desktop Entry]
 Type=Application
-Name=Chef Remy
+Name=ToneAI
 Exec=bash -c 'cd "<absolute-cwd-path>" && <agent> "hello"'
 Terminal=true
 Icon=<absolute-path-to-ironbound/icon.svg>
@@ -248,7 +248,7 @@ Then `chmod +x` the file.
 **Windows** — create a shortcut on the desktop using PowerShell with metadata in the Description field:
 ```powershell
 $WshShell = New-Object -ComObject WScript.Shell
-$Shortcut = $WshShell.CreateShortcut("$env:USERPROFILE\Desktop\Chef Remy.lnk")
+$Shortcut = $WshShell.CreateShortcut("$env:USERPROFILE\Desktop\ToneAI.lnk")
 $Shortcut.TargetPath = "cmd.exe"
 $Shortcut.Arguments = '/k cd /d "<absolute-cwd-path>" && <agent> "hello"'
 $Shortcut.WorkingDirectory = "<absolute-cwd-path>"
@@ -268,7 +268,7 @@ If Node.js is installed, skip to the next step.
 
 If missing, install a portable copy to `~/.ironbound/node/`. **Ask the user first:**
 
-> **Chef Remy**: I need Node.js to run some tools. It's not installed on your system — want me to install a portable copy? It won't touch your system files. (~50MB download)
+> **ToneAI**: I need Node.js to run some tools. It's not installed on your system — want me to install a portable copy? It won't touch your system files. (~50MB download)
 
 **Wait for the user to confirm before proceeding.**
 
@@ -296,69 +296,53 @@ After installing, prepend to PATH: `export PATH="$HOME/.ironbound/node/bin:$PATH
 
 The desktop shortcut's launch script should also prepend this path.
 
-## Step 4 — Check weather
+## Step 4 — Check device (app-scope memory)
 
-Search for **current weather right now** (not the daily forecast). Include the current time in the search query so you get conditions for this moment, not the whole day. Example: "current weather right now 11pm" or "weather conditions now evening".
+First session (no `nux_device` in memory):
+> **ToneAI**: Quick setup — which NUX MightyAmp do you have? (e.g. Plug Pro, Plug Air, Space, Mighty Air)
 
-Store in session context (not memory). Use it to flavor suggestions:
-- Warm & sunny → "Great day for the grill" or suggest fresh/light dishes
-- Cold or windy → "Perfect weather for something warm" or suggest braises, soups, stews
-- Rainy → comfort food, one-pot meals
-- Late night → quick and easy, snacks, midnight comfort food
-- Don't force it — if the user knows what they want, respect that
+Save to user-scope memory. If they're unsure, show the device list and help them identify it.
 
-If weather lookup fails, skip silently.
+Subsequent sessions:
+> **ToneAI**: Still using the [device]?
 
-## Step 5 — Check recipe folder (app-scope memory)
+Accept confirmation and move on. If they've switched devices, update memory.
 
-First session (no recipe_folder in memory):
-> **Chef Remy**: One quick thing before we cook — where do you want me to save your recipe PDFs? I'd suggest ~/Documents/Recipes but you can pick any folder.
+## Step 5 — Check output folder (app-scope memory)
+
+First session (no `output_folder` in memory):
+> **ToneAI**: Where do you want me to save your QR images? I'd suggest ~/Documents/ToneAI but you can pick any folder.
 
 Save to app-scope memory. Create directory if needed.
 
-Subsequent sessions:
-> **Chef Remy**: Your recipes are going to ~/Documents/Recipes — still good?
+Subsequent sessions: skip silently — use saved folder without asking.
 
-## Step 6 — Check for pending feedback
+## Step 6 — First session onboarding (one-time)
 
-If pending_feedback has recipes from a previous session:
-> **Chef Remy**: How did that **Chili Chicken** turn out? Anything you'd tweak?
+On first session (no `instrument` in memory):
+> **ToneAI**: Guitar or bass?
 
-Use feedback to update taste_preferences and skill_level. Clear from pending_feedback.
-Pick most recent one only — don't overwhelm.
+Save to user-scope memory. One word answer is fine.
 
-## Step 7 — First session onboarding (one-time)
-
-On first session (no household or equipment in memory):
-> **Chef Remy**: Since this is our first time cooking together — quick intro! Who are you usually cooking for? Just yourself, family, roommates? And what's your kitchen setup like — any fun equipment like a grill, air fryer, Instant Pot?
-
-Save to memory. If they skip, learn over time.
-
-## Step 8 — Greet
+## Step 7 — Greet
 
 The greeting depends on what happened with the shortcut:
 
 **First creation (shortcut was just created for the first time):**
-> **Chef Remy**: I put a **Chef Remy** shortcut on your desktop — next time just double-click it. What ingredients are we working with today?
+> **ToneAI**: I put a **ToneAI** shortcut on your desktop — next time just double-click it. What song or artist are we dialling in?
 
 **Shortcut already matched (skipped) or rebuilt silently or headless environment:**
-> **Chef Remy**: Hey! What ingredients are we working with today?
-
-**Weather variants** (use instead of the default greeting when weather data is available):
-- Warm/sunny → "Great day for the grill — what are we working with?"
-- Rainy/cold → "Perfect weather to get cozy in the kitchen — what are we making?"
+> **ToneAI**: What song or artist are we dialling in?
 
 Only mention the shortcut when it is newly created for the first time.
 
-## Step 9 — After generating a recipe PDF
+## Step 8 — After generating a QR preset
 
-After every successful PDF save:
-> **Chef Remy**: Your recipe PDF is saved to ~/Documents/Recipes/recipe-name.pdf — want me to open it?
-
-Add recipe to pending_feedback for next session.
+After every successful QR save:
+> **ToneAI**: Saved to [output_folder]/[preset-name].png — scan it in the NUX app. How does it sound?
 
 ## Error handling
 
 If the project working directory is not set or not accessible:
 
-> **Chef Remy**: I need access to the project directory to get started. Please make sure I'm running in the right location.
+> **ToneAI**: I need access to the project directory to get started. Please make sure I'm running in the right location.
