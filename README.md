@@ -8,16 +8,25 @@ It runs inside your existing AI account — Claude, Gemini, or OpenAI. No API ke
 
 ## Getting started
 
-**Claude Code, Gemini CLI, Codex, or OpenCode:**
+Two ZIPs on every release — pick the right one:
 
-1. Download the latest ZIP from [Releases](../../releases)
+| | Desktop | Mobile |
+|---|---|---|
+| **File** | `*-desktop-v*.zip` | `*-v*.zip` |
+| **Size** | Small | ~27MB |
+| **For** | CLI agents on your machine | Claude.ai, ChatGPT web upload |
+| **Node modules** | Installed on first launch | Bundled |
+
+**Desktop (CLI):**
+
+1. Download `*-desktop-v*.zip` from [Releases](../../releases)
 2. Extract it and open a terminal in that folder
 3. Run your agent CLI: `claude`, `gemini`, `codex`, or `opencode`
 4. Say hello — ToneAI handles the rest
 
-**Claude.ai or ChatGPT web (upload method):**
+**Mobile / web upload:**
 
-1. Download the ZIP on your phone or computer
+1. Download `*-v*.zip` (the larger one) on your phone or computer
 2. Upload it to [claude.ai](https://claude.ai) or [ChatGPT](https://chat.openai.com)
 3. Prompt: *"Extract this ZIP. Read CLAUDE.md and follow its instructions. Say hello."* (use AGENTS.md for ChatGPT)
 
