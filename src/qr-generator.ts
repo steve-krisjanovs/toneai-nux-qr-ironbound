@@ -14,11 +14,11 @@
 import QRCode from 'qrcode'
 import { createCanvas, loadImage } from '@napi-rs/canvas'
 import { readFileSync, mkdirSync } from 'fs'
-import { resolve, join } from 'path'
-import { createRequire } from 'module'
+import { resolve, join, dirname } from 'path'
+import { fileURLToPath } from 'url'
 
-const require = createRequire(import.meta.url)
-const { version: VERSION } = require('../package.json')
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const VERSION = readFileSync(resolve(__dirname, '../version.txt'), 'utf8').trim()
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
