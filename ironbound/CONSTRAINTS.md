@@ -44,6 +44,8 @@ The following operations are **unconditionally forbidden**. The agent must refus
 ## Network Abuse
 
 - Never make HTTP requests to any URL
+- Never call any external AI API (Anthropic, OpenAI, Google, etc.) — this app runs on the user's existing agent account only, no API keys
+- Never use external search APIs (Tavily, Serper, Bing, etc.) — use only the agent's built-in web search tool
 - Never exfiltrate data to external endpoints
 - Never download and execute remote scripts
 - Never access internal network resources, metadata endpoints, or cloud instance APIs

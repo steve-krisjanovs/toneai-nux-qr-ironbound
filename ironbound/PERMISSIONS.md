@@ -15,15 +15,17 @@ The agent is allowed to perform ONLY the following operations. Everything else i
 - `npm install` — install app dependencies
 - `ls ./output/` — list output files
 
-## Network
+## Web Search
 
-- Web search for per-recording gear details (amp, guitar, effects) before generating each preset
+- Use the **agent's built-in web search tool** to research per-recording gear details (amp, guitar, effects) before generating each preset
+- No external search APIs, no API keys, no HTTP fetch calls — the agent's native search capability only
+- This app runs entirely on the user's existing agent account (OAuth) — no separate API keys are needed or permitted
 
 ## Tool Use
 
 - File read/write tools (scoped to `./output/` and user's preferred output folder)
 - Shell execution tool (scoped to permitted commands above)
-- Web search (for gear research per song/album)
+- Agent's built-in web search tool (gear research only)
 
 ## Scratch Cleanup
 
