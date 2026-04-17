@@ -1,0 +1,297 @@
+name: Release toneai-setup
+
+on:
+  push:
+    tags:
+      - 'setup-release'
+
+permissions:
+  contents: write
+
+jobs:
+  build-binaries:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-x64
+            binary: toneai-setup-linux-x64
+            bun_target: bun-linux-x64
+          - os: windows-latest
+            target: win-x64
+            binary: toneai-setup-win-x64.exe
+            bun_target: bun-windows-x64
+          - os: macos-latest
+            target: mac-arm64
+            binary: toneai-setup-mac-arm64
+            bun_target: bun-darwin-arm64
+          - os: macos-latest
+            target: mac-x64
+            binary: toneai-setup-mac-x64
+            bun_target: bun-darwin-x64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Build binary
+        working-directory: setup
+        run: bun build src/index.ts --compile --target=${{ matrix.bun_target }} --outfile ../${{ matrix.binary }}
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.binary }}
+          path: ${{ matrix.binary }}
+
+  build-installers:
+    name: Build installers
+    needs: build-binaries
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            target: win
+          - os: macos-latest
+            target: mac
+          - os: ubuntu-latest
+            target: deb
+          - os: ubuntu-latest
+            target: rpm
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        shell: bash
+        run: echo "VERSION=$(cat version.txt | tr -d '[:space:]')" >> $GITHUB_OUTPUT
+
+      # ── Windows — Inno Setup ──────────────────────────────────────────────
+      - name: Download Windows binary
+        if: matrix.target == 'win'
+        uses: actions/download-artifact@v4
+        with:
+          name: toneai-setup-win-x64.exe
+
+      - name: Build Windows installer
+        if: matrix.target == 'win'
+        shell: pwsh
+        run: |
+          choco install innosetup -y
+          iscc /DMyAppVersion="${{ steps.version.outputs.VERSION }}" installers\windows\setup.iss
+
+      - name: Upload Windows installer
+        if: matrix.target == 'win'
+        uses: actions/upload-artifact@v4
+        with:
+          name: toneai-setup-${{ steps.version.outputs.VERSION }}-windows
+          path: installers/windows/Output/*.exe
+
+      # ── macOS pkg ─────────────────────────────────────────────────────────
+      - name: Download macOS binaries
+        if: matrix.target == 'mac'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: toneai-setup-mac-*
+          merge-multiple: true
+
+      - name: Build macOS pkg
+        if: matrix.target == 'mac'
+        run: |
+          chmod +x toneai-setup-mac-arm64 toneai-setup-mac-x64
+          bash installers/macos/build-pkg.sh ${{ steps.version.outputs.VERSION }}
+
+      - name: Upload macOS pkg
+        if: matrix.target == 'mac'
+        uses: actions/upload-artifact@v4
+        with:
+          name: toneai-setup-${{ steps.version.outputs.VERSION }}-macos
+          path: installers/macos/dist/*.pkg
+
+      # ── Linux .deb ────────────────────────────────────────────────────────
+      - name: Download Linux binary
+        if: matrix.target == 'deb'
+        uses: actions/download-artifact@v4
+        with:
+          name: toneai-setup-linux-x64
+
+      - name: Build .deb
+        if: matrix.target == 'deb'
+        run: bash installers/linux/build-deb.sh ${{ steps.version.outputs.VERSION }}
+
+      - name: Upload .deb
+        if: matrix.target == 'deb'
+        uses: actions/upload-artifact@v4
+        with:
+          name: toneai-setup-${{ steps.version.outputs.VERSION }}-linux-deb
+          path: installers/linux/dist/*.deb
+
+      # ── Linux .rpm ────────────────────────────────────────────────────────
+      - name: Download Linux binary (rpm)
+        if: matrix.target == 'rpm'
+        uses: actions/download-artifact@v4
+        with:
+          name: toneai-setup-linux-x64
+
+      - name: Install rpm tools
+        if: matrix.target == 'rpm'
+        run: sudo apt-get install -y rpm
+
+      - name: Build .rpm
+        if: matrix.target == 'rpm'
+        run: bash installers/linux/build-rpm.sh ${{ steps.version.outputs.VERSION }}
+
+      - name: Upload .rpm
+        if: matrix.target == 'rpm'
+        uses: actions/upload-artifact@v4
+        with:
+          name: toneai-setup-${{ steps.version.outputs.VERSION }}-linux-rpm
+          path: installers/linux/dist/*.rpm
+
+  release:
+    name: Create GitHub Release
+    needs: build-installers
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: echo "VERSION=$(cat version.txt | tr -d '[:space:]')" >> $GITHUB_OUTPUT
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: toneai-setup v${{ steps.version.outputs.VERSION }}
+          body: |
+            ## ToneAI Setup v${{ steps.version.outputs.VERSION }}
+
+            First-time setup wizard — get ToneAI running in minutes. No terminal experience required.
+
+            Tell ToneAI what song or artist you want to sound like. It builds a NUX MightyAmp preset and saves a QR code you scan into the NUX app. Uses your existing AI subscription — no extra API key.
+
+            ## Install
+
+            **Windows:** Download and run `toneai-setup.exe`
+
+            **macOS:**
+            ```
+            brew tap steve-krisjanovs/tools
+            brew install toneai-setup
+            toneai-setup
+            ```
+            Or download `toneai-setup-${{ steps.version.outputs.VERSION }}-macos.pkg` — right-click → Open to bypass Gatekeeper.
+
+            **Linux (Debian/Ubuntu):**
+            ```
+            sudo dpkg -i toneai-setup_${{ steps.version.outputs.VERSION }}_amd64.deb
+            ```
+
+            **Linux (Fedora/RHEL):**
+            ```
+            sudo rpm -i toneai-setup-${{ steps.version.outputs.VERSION }}-1.x86_64.rpm
+            ```
+
+            ---
+            Run `toneai-setup` — the wizard handles the rest.
+          files: release-assets/**/*
+          draft: false
+          prerelease: false
+
+  update-homebrew:
+    name: Update Homebrew formula
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout toneai repo
+        uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: echo "VERSION=$(cat version.txt | tr -d '[:space:]')" >> $GITHUB_OUTPUT
+
+      - name: Download macOS binaries for sha256
+        uses: actions/download-artifact@v4
+        with:
+          pattern: toneai-setup-mac-*
+          merge-multiple: true
+
+      - name: Compute sha256 hashes
+        id: hashes
+        run: |
+          echo "ARM64=$(sha256sum toneai-setup-mac-arm64 | awk '{print $1}')" >> $GITHUB_OUTPUT
+          echo "X64=$(sha256sum toneai-setup-mac-x64 | awk '{print $1}')" >> $GITHUB_OUTPUT
+
+      - name: Checkout homebrew tap
+        uses: actions/checkout@v4
+        with:
+          repository: steve-krisjanovs/homebrew-tools
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tools
+
+      - name: Update formula
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          SHA256_ARM64=${{ steps.hashes.outputs.ARM64 }}
+          SHA256_X64=${{ steps.hashes.outputs.X64 }}
+          TAG=${{ github.ref_name }}
+
+          cat > homebrew-tools/Formula/toneai-setup.rb << 'FORMULA'
+          # Formula for homebrew-tools tap: steve-krisjanovs/homebrew-tools
+          # To install:
+          #   brew tap steve-krisjanovs/tools
+          #   brew install toneai-setup
+
+          class ToneaiSetup < Formula
+            desc "Setup wizard for ToneAI — AI-powered NUX MightyAmp tone assistant"
+            homepage "https://github.com/steve-krisjanovs/toneai-nux-qr-ironbound"
+            version "VERSION_PLACEHOLDER"
+            license "MIT"
+
+            on_macos do
+              on_arm do
+                url "https://github.com/steve-krisjanovs/toneai-nux-qr-ironbound/releases/download/TAG_PLACEHOLDER/toneai-setup-mac-arm64"
+                sha256 "ARM64_PLACEHOLDER"
+              end
+              on_intel do
+                url "https://github.com/steve-krisjanovs/toneai-nux-qr-ironbound/releases/download/TAG_PLACEHOLDER/toneai-setup-mac-x64"
+                sha256 "X64_PLACEHOLDER"
+              end
+            end
+
+            def install
+              bin.install Dir["toneai-setup-mac-*"].first => "toneai-setup"
+            end
+
+            test do
+              assert_match "ToneAI", shell_output("#{bin}/toneai-setup --help 2>&1 || true")
+            end
+          end
+          FORMULA
+
+          sed -i "s/VERSION_PLACEHOLDER/$VERSION/" homebrew-tools/Formula/toneai-setup.rb
+          sed -i "s/TAG_PLACEHOLDER/$TAG/g" homebrew-tools/Formula/toneai-setup.rb
+          sed -i "s/ARM64_PLACEHOLDER/$SHA256_ARM64/" homebrew-tools/Formula/toneai-setup.rb
+          sed -i "s/X64_PLACEHOLDER/$SHA256_X64/" homebrew-tools/Formula/toneai-setup.rb
+
+      - name: Commit and push
+        run: |
+          cd homebrew-tools
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/toneai-setup.rb
+          git commit -m "toneai-setup: v${{ steps.version.outputs.VERSION }}"
+          git push
